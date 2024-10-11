@@ -224,7 +224,7 @@ class fw:
 
 
 
-    def packet_tracert_icmp(self,source_ip,destination_ip,ingressIF="insideIF",icmpType="8",icmpCode="0",threadsCnt:int=20):
+    def packet_tracert_icmp(self,source_ip,destination_ip,ingressIF="inside",icmpType="8",icmpCode="0",threadsCnt:int=20):
         self.build_Device_list()
         self.ingressIF=ingressIF.lower()
         self.protocol="icmp"

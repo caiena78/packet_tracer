@@ -32,8 +32,7 @@ def packet_tracert():
 
 @app.route('/api/packet_tracert_icmp', methods=['POST'])
 def packet_tracert_icmp():
-    print("ICMP")
-    
+    print("ICMP")    
     data = request.get_json()    
     # testing 
     print(json.dumps(data,indent=4))
