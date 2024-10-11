@@ -22,18 +22,21 @@ class fw:
     dest_ip="8.8.8.8"
     dest_port="443"
     trace=[]
+    __devicefile="devices/devices.json"
     lock=threading.Lock()
 
     def __init__(self,devicefile="devices/devices.json") -> None:
-        self.build_Device_list(devicefile)
+        self.__devicefile=devicefile
+        self.build_Device_list()
         
-    def build_Device_list(self,devicefile)->None:
-        if not os.path.exists(devicefile):
-            raise ValueError(f"file not foud: {devicefile}")
-        with open(devicefile) as r:
+    def build_Device_list(self)->None:        
+        if not os.path.exists(self.__devicefile):
+            raise ValueError(f"file not foud: {self.__devicefile}")        
+        with open(self.__devicefile) as r:
             data=r.read()
             data=json.loads(data)
-            self._devicelist=data
+            with self.lock:
+                self._devicelist=data
 
     # 'cisco_ftd_ssh'
     # 'cisco_asa'
@@ -126,7 +129,9 @@ class fw:
                 j_trace=xmltodict.parse("<TRACE>"+traceData+"</TRACE>")
                 with self.lock:
                     self.trace.append({
+                        "cmd":cmd,
                         "name":fwall["name"],
+                        "DeviceIP":login["host"],
                         "location":fwall["location"],
                         "Phase":j_trace["TRACE"]["Phase"],
                         "result":j_trace["TRACE"]["result"]
@@ -135,7 +140,8 @@ class fw:
                 break
 
 
-    def packet_tracert_protocol(self,protocol="tcp",source_ip="10.10.10.10",dest_ip="8.8.8.8",dest_port="443",ingressIF="insideIF",source_port="1025",threadsCnt:int=20):
+    def packet_tracert_protocol(self,protocol="tcp",source_ip="10.10.10.10",dest_ip="8.8.8.8",dest_port="443",ingressIF="inside",source_port="1025",threadsCnt:int=20):
+        self.build_Device_list()
         self.ingressIF=ingressIF
         self.protocol=protocol
         self.source_ip=source_ip
@@ -162,7 +168,7 @@ class fw:
                 return None
             for result in self.trace:
                 if result["result"]["action"]=="allow":
-                    result_output[akey].append({
+                    result_output[akey].append({                        
                         "name":result['name'],
                         "phase":result['Phase'],
                         "result":result['result']
@@ -187,7 +193,9 @@ class fw:
                 password=os.environ.get(fwall['password'])           
                 enable=os.environ.get(fwall["enable"])
                 interface=fwall[self.ingressIF]  
-                cmd=f"packet-tracer input {interface} icmp {self.source_ip} {self.icmpType} {self.icmpCode} {self.destination_ip} xml "                
+                cmd=f"packet-tracer input {interface} icmp {self.source_ip} {self.icmpType} {self.icmpCode} {self.destination_ip} xml "   
+                print(fwall["deviceType"])   
+                print(cmd)          
                 if type(fwall["ip"]) is str:
                     login=self.getDevice(fwall["ip"],username,password,enable,fwall["deviceType"])
                 if type(fwall["ip"]) is list:
@@ -204,7 +212,9 @@ class fw:
                 j_trace=xmltodict.parse("<TRACE>"+traceData+"</TRACE>")
                 with self.lock:
                     self.trace.append({
+                        "cmd":cmd,
                         "name":fwall["name"],
+                        "DeviceIP":login["host"],
                         "location":fwall["location"],
                         "Phase":j_trace["TRACE"]["Phase"],
                         "result":j_trace["TRACE"]["result"]
@@ -214,14 +224,14 @@ class fw:
 
 
 
-    def packet_tracert_icmp(self,source_ip,destination_ip,ingressIF="insideIF",icmpType=0,icmpCode=0,threadsCnt:int=20):
-        self.ingressIF=ingressIF
+    def packet_tracert_icmp(self,source_ip,destination_ip,ingressIF="insideIF",icmpType="8",icmpCode="0",threadsCnt:int=20):
+        self.build_Device_list()
+        self.ingressIF=ingressIF.lower()
         self.protocol="icmp"
         self.source_ip=source_ip
         self.destination_ip=destination_ip
         self.icmpType=icmpType
-        self.icmpCode=icmpCode
-        #cmd=f"packet-tracer input {interface} icmp 10.10.10.10 0 0 8.8.8.8"
+        self.icmpCode=icmpCode     
         threads=[]
         for i in range(1,threadsCnt+1):        
             threads.append(threading.Thread(target=self.__packet_tracert_icmp))

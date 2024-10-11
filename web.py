@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, json, request, jsonify
 import fw
 from waitress import serve
 
@@ -24,18 +24,43 @@ def packet_tracert():
 
 @app.route('/api/packet_tracert_icmp', methods=['POST'])
 def packet_tracert_icmp():
+    print("ICMP")
+    
     data = request.get_json()    
-    source_ip = data.get('source_ip')    
-    destination_ip = data.get('destination_ip')    
-
+    # testing 
+    print(json.dumps(data,indent=4))
+    try:
+        source_ip = data.get('source_ip')    
+        destination_ip = data.get('destination_ip')    
+        if "ingressIF" in data:
+            ingressIF=data.get('ingressIF')
+            ingressIF=ingressIF.lower()
+        else:
+            ingressIF="inside"
+        if "icmpType" in data:
+            icmpType=data.get('icmpType')
+        else:
+            icmpType="8"
+        if "icmpCode" in data:
+            icmpCode=data.get('icmpCode')
+        else:
+            icmpCode="0"
+    except Exception as e:
+        print(e)
+        return jsonify({"error": e}), 400
+    
     if not all([source_ip, destination_ip]):
+        print("Missing data")
         return jsonify({"error": "Missing data"}), 400
    
     firewall=fw.fw()
-    result = firewall.results=firewall.packet_tracert_icmp("10.10.10.10","9.9.9.9")   
+    result = firewall.results=firewall.packet_tracert_icmp(source_ip,destination_ip,ingressIF,icmpType,icmpCode)   
     return jsonify({"result": result})
 
 
 if __name__ == '__main__':
     #app.run(debug=False)
-    serve(app, host="0.0.0.0", port=5000)
+    ipaddress="0.0.0.0"
+    port=5000
+    print(f"Server running, ip:{ipaddress}:{port}")
+    serve(app, host=ipaddress, port=port)
