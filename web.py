@@ -8,17 +8,25 @@ app = Flask(__name__)
 @app.route('/api/packet_tracert', methods=['POST'])
 def packet_tracert():
     data = request.get_json()
-    protocol = data.get('protocol')
-    source_ip = data.get('source_ip')
-    source_port = data.get('source_port')
-    destination_ip = data.get('destination_ip')
-    destination_port = data.get('destination_port')
-
-    if not all([protocol, source_ip, source_port, destination_ip, destination_port]):
-        return jsonify({"error": "Missing data"}), 400
-   
-    firewall=fw.fw()
-    result = firewall.packet_tracert_protocol("tcp",source_ip,destination_ip,destination_port,"insideIF")    
+    try:
+        if "ingressIF" in data:
+            ingressIF=data.get('ingressIF')
+            ingressIF=ingressIF.lower()
+        else:
+            ingressIF="inside"
+        protocol = data.get('protocol')
+        source_ip = data.get('source_ip')
+        source_port = data.get('source_port')
+        destination_ip = data.get('destination_ip')
+        destination_port = data.get('destination_port')
+        if not all([protocol, source_ip, source_port, destination_ip, destination_port]):
+            return jsonify({"error": "Missing data"}), 400
+    
+        firewall=fw.fw()
+        result = firewall.packet_tracert_protocol("tcp",source_ip,destination_ip,destination_port,ingressIF)    
+    except Exception as e:
+        print(e)
+        return jsonify({"error": e}), 400
     return jsonify({"result": result})
 
 
@@ -45,16 +53,14 @@ def packet_tracert_icmp():
             icmpCode=data.get('icmpCode')
         else:
             icmpCode="0"
+        if not all([source_ip, destination_ip]):
+            print("Missing data")
+            return jsonify({"error": "Missing data"}), 400
+        firewall=fw.fw()
+        result = firewall.results=firewall.packet_tracert_icmp(source_ip,destination_ip,ingressIF,icmpType,icmpCode)   
     except Exception as e:
         print(e)
         return jsonify({"error": e}), 400
-    
-    if not all([source_ip, destination_ip]):
-        print("Missing data")
-        return jsonify({"error": "Missing data"}), 400
-   
-    firewall=fw.fw()
-    result = firewall.results=firewall.packet_tracert_icmp(source_ip,destination_ip,ingressIF,icmpType,icmpCode)   
     return jsonify({"result": result})
 
 
