@@ -3,3 +3,4 @@ netmiko==4.4.0
 Requests==2.32.3
 waitress==3.0.0
 xmltodict==0.13.0
+marshmallow==3.22.0

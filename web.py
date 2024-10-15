@@ -23,6 +23,12 @@ def packet_tracert():
             return jsonify({"error": "Missing data"}), 400
     
         firewall=fw.fw()
+        if not firewall.is_valid_interface(ingressIF):
+            return jsonify(f"error:not valid interface ({ingressIF})")
+        if not firewall.is_valid_ipv4(source_ip):
+            return jsonify(f"error:not valid Source ip ({source_ip})")
+        if not firewall.is_valid_ipv4(destination_ip):
+            return jsonify(f"error:not valid destination ip ({destination_ip})")
         result = firewall.packet_tracert_protocol("tcp",source_ip,destination_ip,destination_port,ingressIF)    
     except Exception as e:
         print(e)
@@ -56,6 +62,12 @@ def packet_tracert_icmp():
             print("Missing data")
             return jsonify({"error": "Missing data"}), 400
         firewall=fw.fw()
+        if not firewall.is_valid_interface(ingressIF):
+            return jsonify(f"error:not valid interface ({ingressIF})")
+        if not firewall.is_valid_ipv4(source_ip):
+            return jsonify(f"error:not valid Source ip ({source_ip})")
+        if not firewall.is_valid_ipv4(destination_ip):
+            return jsonify(f"error:not valid destination ip ({destination_ip})")
         result = firewall.results=firewall.packet_tracert_icmp(source_ip,destination_ip,ingressIF,icmpType,icmpCode)   
     except Exception as e:
         print(e)

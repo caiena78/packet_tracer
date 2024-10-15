@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import re
 import socket
@@ -24,6 +25,21 @@ class fw:
     trace=[]
     __devicefile="devices/devices.json"
     lock=threading.Lock()
+    
+    def is_valid_interface(self,iface):
+        list="inside|outside"
+        if iface in list:
+            return True
+        else:
+            return False
+        
+    def is_valid_ipv4(self,address):
+        try:
+            # Try to create an IPv4 address object
+            ip = ipaddress.IPv4Address(address)
+            return True
+        except ipaddress.AddressValueError:
+            return False
 
     def __init__(self,devicefile="devices/devices.json") -> None:
         self.__devicefile=devicefile
