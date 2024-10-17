@@ -16,7 +16,7 @@ class fw:
     _devicelogin=dict
     _devicelist=[]
     firewalls=[]        
-    ingressIF="insideIF"
+    ingressIF="inside"
     protocol="tcp"
     source_ip="10.10.10.10"
     source_port="1025"
@@ -260,15 +260,3 @@ class fw:
 
 
 
-
-
-# firewall=fw()
-# #results=firewall.packet_tracert_protocol("tcp","8.8.8.8","10.10.10.10","443","outsideIF")
-# results=firewall.packet_tracert_protocol("tcp","10.10.10.10","199.60.103.33","443","insideIF")
-# results=firewall.packet_tracert_icmp("10.10.10.10","9.9.9.9")
-# with open("all.json","w") as w:
-#     w.write(json.dumps(results,indent=4 ))
-
-# analysis=firewall.analysis()
-# with open("analysis.json","w") as w:
-#     w.write(json.dumps(analysis,indent=4))
