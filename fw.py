@@ -6,7 +6,8 @@ import threading
 from netmiko import ConnectHandler
 import os
 import xmltodict
-
+import validation 
+from marshmallow import ValidationError
 
 
 
@@ -164,6 +165,21 @@ class fw:
         self.source_port=source_port
         self.dest_ip= dest_ip
         self.dest_port=dest_port
+        TcpUdpValidation=validation.TcpUdpScheme()
+        try:
+            TcpUdpValidation.load({
+                "ingressIF":ingressIF,
+                "protocol":protocol,
+                "source_ip":source_ip,
+                "source_port":source_port,
+                "destination_ip": dest_ip,
+                "dest_port":dest_port
+            })
+        except ValidationError as err:
+             print("**************Validation Error*************")   
+             print("Validation errors:", err.messages)    
+             print("\n**************Validation Error*************\n\n\n")   
+             raise(err)
         threads=[]
         for i in range(1,threadsCnt+1):        
             threads.append(threading.Thread(target=self.__packet_tracert_protocol))
@@ -247,7 +263,22 @@ class fw:
         self.source_ip=source_ip
         self.destination_ip=destination_ip
         self.icmpType=icmpType
-        self.icmpCode=icmpCode     
+        self.icmpCode=icmpCode  
+        icmpValidation=validation.icmpSchema()
+        try:
+            icmpValidation.load({                
+                "ingressIF":ingressIF.lower(),
+                "protocol":"icmp",
+                "source_ip":source_ip,
+                "destination_ip":destination_ip,
+                "icmpType":icmpType,
+                "icmpCode":icmpCode  
+            })
+        except ValidationError as err:
+             print("**************Validation Error*************")   
+             print("Validation errors:", err.messages)    
+             print("\n**************Validation Error*************\n\n\n")    
+             raise(err)
         threads=[]
         for i in range(1,threadsCnt+1):        
             threads.append(threading.Thread(target=self.__packet_tracert_icmp))
@@ -257,6 +288,9 @@ class fw:
         return self.trace
         
 
-
+firewall=fw()
+#data=firewall.packet_tracert_icmp("10.10.10.8","8.8.8.8","inside","256","0")
+data=firewall.packet_tracert_protocol("TCP1","10.10.10.10","8.8.8.8","443","inside","1025")
+print(json.dumps(data,indent=4))
 
 

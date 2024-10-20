@@ -68,7 +68,7 @@ def packet_tracert_icmp():
             return jsonify(f"error:not valid Source ip ({source_ip})")
         if not firewall.is_valid_ipv4(destination_ip):
             return jsonify(f"error:not valid destination ip ({destination_ip})")
-        result = firewall.results=firewall.packet_tracert_icmp(source_ip,destination_ip,ingressIF,icmpType,icmpCode)   
+        result = firewall.packet_tracert_icmp(source_ip,destination_ip,ingressIF,icmpType,icmpCode)   
     except Exception as e:
         print(e)
         return jsonify({"error": e}), 400
