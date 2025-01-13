@@ -288,9 +288,9 @@ class fw:
         return self.trace
         
 
-firewall=fw()
+#firewall=fw()
 #data=firewall.packet_tracert_icmp("10.10.10.8","8.8.8.8","inside","256","0")
-data=firewall.packet_tracert_protocol("TCP1","10.10.10.10","8.8.8.8","443","inside","1025")
-print(json.dumps(data,indent=4))
+#data=firewall.packet_tracert_protocol("TCP1","10.10.10.10","8.8.8.8","443","inside","1025")
+#print(json.dumps(data,indent=4))
 
 
